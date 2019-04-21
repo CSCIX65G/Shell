@@ -48,7 +48,7 @@ public struct ShellPathTrampoline {
             return makeError(code: 99, info: "Permission denied")
         }
         
-        return Process.launch(at: url.path, with: arguments)
+        return Process.launch(at: url, with: arguments)
     }
 }
 

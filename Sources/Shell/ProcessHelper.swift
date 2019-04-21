@@ -6,7 +6,7 @@ import Foundation
 extension Process {
   
     public struct FancyResult {
-      // Note that fancy actually :-) Convenience before everything!!!
+      // Not that fancy actually :-) Convenience before everything!!!
     
       public let status     : Int
       public let outputData : Data
@@ -27,14 +27,14 @@ extension Process {
 
     }
   
-    static func launch(at launchPath: String, with arguments: [ String ],
-                       using shell: String? = "/bin/bash")
+    static func launch(at launchPath: URL, with arguments: [ String ],
+                       using shell: URL? = URL(string: "file:/bin/bash"))
                 -> FancyResult
     {
         let process = Process()
-        process.launchPath = shell ?? launchPath
+        process.executableURL = shell ?? launchPath
         process.arguments  = shell != nil
-            ? [ "-c", launchPath + " " + arguments.joined(separator: " ") ]
+            ? [ "-c", launchPath.path + " " + arguments.joined(separator: " ") ]
             : arguments
     
         let stdout = Pipe()
@@ -56,7 +56,15 @@ extension Process {
             Q.async { errorData.append(data) }
         }
     
-        process.launch()
+        do {
+            try process.run()
+        } catch {
+            return FancyResult(
+                status: -1,
+                outputData: Data(),
+                errorData: "process.run() failed".data(using: .utf8)!
+            )
+        }
         process.waitUntilExit()
     
         stdout.fileHandleForReading.readabilityHandler = nil
